@@ -1,0 +1,18 @@
+<resources>
+    <string name="app_name">VcSample Lib Integration</string>
+
+    <string name="permission_rationale">"Several permissions are needed for Vidyo Works SDK usage."</string>
+
+    <string name="join">Join</string>
+    <string name="join_room">Join Room</string>
+
+    <string name="end_call">End call</string>
+    <string name="no_network">No connection.</string>
+
+    <string name="join_cred_hint">All the join params could be provided inside JoinActivity</string>
+
+    <string name="portal_hint">Portal</string>
+    <string name="room_key_hint">Room key</string>
+    <string name="display_name_hint">Display Name</string>
+    <string name="empty_cred">Empty credentials</string>
+</resources>
