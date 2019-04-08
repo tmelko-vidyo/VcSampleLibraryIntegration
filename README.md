@@ -7,4 +7,4 @@ Version: 3.5.15
 
 > PORTA, ROOM KEY, DISPLAY NAME could be hardcoded within **JoinActivity**.
 
-> No NDK pre-build required. Just Android Stuido 3.x version and real device.
+> No NDK pre-build required. Just Android Studio 3.x version and real device.
