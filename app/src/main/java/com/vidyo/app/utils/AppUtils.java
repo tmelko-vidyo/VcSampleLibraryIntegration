@@ -4,16 +4,22 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.os.Looper;
 import android.telephony.TelephonyManager;
+import android.view.Surface;
 
 import com.vidyo.R;
+import com.vidyo.app.ApplicationJni;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 
 public class AppUtils {
+
+    private static final int ORIENTATION_UP = 0;
+    private static final int ORIENTATION_DOWN = 1;
+    private static final int ORIENTATION_LEFT = 2;
+    private static final int ORIENTATION_RIGHT = 3;
 
     public static String writeCaCertificates(Context context) {
         try {
@@ -53,11 +59,11 @@ public class AppUtils {
         return cacheDir != null ? cacheDir.toString() + File.separator : null;
     }
 
-    @SuppressLint("MissingPermission")
+    @SuppressLint({"MissingPermission", "HardwareIds"})
     public static String deviceId(Context context) {
         TelephonyManager telephonyManager;
         telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
-        return telephonyManager.getDeviceId();
+        return telephonyManager != null ? telephonyManager.getDeviceId() : "zero";
     }
 
     public static boolean isNetworkAvailable(Context context) {
@@ -68,5 +74,25 @@ public class AppUtils {
 
         NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
         return activeNetworkInfo != null && activeNetworkInfo.isConnected();
+    }
+
+    public static void SetDeviceOrientation(int newRotation, ApplicationJni applicationJni) {
+        int orientation = rotation2Orientation(newRotation);
+        applicationJni.LmiAndroidJniSetOrientation(orientation);
+    }
+
+    private static int rotation2Orientation(int rotation) {
+        switch (rotation) {
+            case Surface.ROTATION_0:
+                return ORIENTATION_UP;
+            case Surface.ROTATION_90:
+                return ORIENTATION_RIGHT;
+            case Surface.ROTATION_180:
+                return ORIENTATION_DOWN;
+            case Surface.ROTATION_270:
+                return ORIENTATION_LEFT;
+            default:
+                return ORIENTATION_UP;
+        }
     }
 }

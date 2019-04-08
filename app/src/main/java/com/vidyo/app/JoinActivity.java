@@ -1,12 +1,18 @@
 package com.vidyo.app;
 
 import android.content.Context;
+import android.content.res.Configuration;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.Display;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -34,7 +40,7 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
-public class JoinActivity extends AppCompatActivity implements LmiDeviceManagerView.Callback {
+public class JoinActivity extends AppCompatActivity implements LmiDeviceManagerView.Callback, SensorEventListener {
 
     private static final String PORTAL = null; // PORTAL_URL e.g. https://vidyoclound.portal.com
     private static final String ROOM_KEY = null; // ROOM_KEY e.g. "dDVbw3rE"
@@ -58,11 +64,14 @@ public class JoinActivity extends AppCompatActivity implements LmiDeviceManagerV
     private boolean callStarted = false;
 
     private LmiDeviceManagerView lmiDeviceManagerView;
+    private SensorManager sensorManager;
 
     private ProgressBar joinProgress;
 
     private Button joinButton;
     private Button cancelButton;
+
+    private int currentRotation = -1;
 
     @Override
     protected void onResume() {
@@ -74,6 +83,8 @@ public class JoinActivity extends AppCompatActivity implements LmiDeviceManagerV
 
             jniBridge.LmiAndroidJniSetBackground(false);
         }
+
+        controlSensor(true);
     }
 
     @Override
@@ -86,6 +97,8 @@ public class JoinActivity extends AppCompatActivity implements LmiDeviceManagerV
 
             jniBridge.LmiAndroidJniSetBackground(true);
         }
+
+        controlSensor(false);
     }
 
     @Override
@@ -107,6 +120,8 @@ public class JoinActivity extends AppCompatActivity implements LmiDeviceManagerV
         if (audioManager != null) {
             audioManager.setSpeakerphoneOn(true);
         }
+
+        sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 
         user.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
@@ -177,7 +192,30 @@ public class JoinActivity extends AppCompatActivity implements LmiDeviceManagerV
             addEndCallView(controlForm);
 
             controlForm.setVisibility(View.GONE);
+
+            orientationChanged();
         } else throw new RuntimeException("Init failed!");
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
+        /* Stub */
+    }
+
+    @Override
+    public void onSensorChanged(SensorEvent event) {
+        int type = event.sensor.getType();
+        if ((type != Sensor.TYPE_ACCELEROMETER) && (type != Sensor.TYPE_MAGNETIC_FIELD)) {
+            return;
+        }
+
+        orientationChanged();
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        orientationChanged();
     }
 
     @Override
@@ -186,6 +224,7 @@ public class JoinActivity extends AppCompatActivity implements LmiDeviceManagerV
         EventBus.getDefault().unregister(this);
 
         stopDevices();
+        controlSensor(false);
 
         if (jniBridge != null) {
             jniBridge.LmiAndroidJniUnregisterDefaultActivity();
@@ -346,7 +385,29 @@ public class JoinActivity extends AppCompatActivity implements LmiDeviceManagerV
 
         frame.addView(endCall);
 
-        endCall.getLayoutParams().width = ViewGroup.LayoutParams.MATCH_PARENT;
+        endCall.getLayoutParams().width = ViewGroup.LayoutParams.WRAP_CONTENT;
         endCall.getLayoutParams().height = ViewGroup.LayoutParams.WRAP_CONTENT;
+    }
+
+    private void controlSensor(boolean register) {
+        if (sensorManager == null) return;
+
+        if (register) {
+            Sensor gSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+            sensorManager.registerListener(this, gSensor, SensorManager.SENSOR_DELAY_NORMAL);
+        } else {
+            sensorManager.unregisterListener(this);
+        }
+    }
+
+    private void orientationChanged() {
+        WindowManager windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
+        Display display = windowManager != null ? windowManager.getDefaultDisplay() : null;
+        int newRotation = display != null ? display.getRotation() : 0;
+
+        if (newRotation != currentRotation) {
+            currentRotation = newRotation;
+            AppUtils.SetDeviceOrientation(newRotation, jniBridge);
+        }
     }
 }
