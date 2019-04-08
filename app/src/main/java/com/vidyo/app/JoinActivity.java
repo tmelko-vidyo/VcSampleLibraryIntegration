@@ -34,9 +34,6 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
-/**
- * A login screen that offers login via email/password.
- */
 public class JoinActivity extends AppCompatActivity implements LmiDeviceManagerView.Callback {
 
     private static final String PORTAL = null; // PORTAL_URL e.g. https://vidyoclound.portal.com

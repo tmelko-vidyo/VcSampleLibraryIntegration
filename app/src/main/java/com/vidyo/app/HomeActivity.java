@@ -15,15 +15,14 @@ import android.widget.Toast;
 import com.vidyo.R;
 
 import static android.Manifest.permission.CAMERA;
+import static android.Manifest.permission.READ_PHONE_STATE;
 import static android.Manifest.permission.RECORD_AUDIO;
-import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 
 public class HomeActivity extends AppCompatActivity {
 
     private static final String[] PERMISSIONS_LIST = new String[]{
             Manifest.permission.CAMERA,
             Manifest.permission.RECORD_AUDIO,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE,
             Manifest.permission.READ_PHONE_STATE
     };
 
@@ -49,11 +48,7 @@ public class HomeActivity extends AppCompatActivity {
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if (requestCode == PERMISSIONS_RC) {
-            if (grantResults.length == 4
-                    && grantResults[0] == PackageManager.PERMISSION_GRANTED
-                    && grantResults[1] == PackageManager.PERMISSION_GRANTED
-                    && grantResults[2] == PackageManager.PERMISSION_GRANTED
-                    && grantResults[3] == PackageManager.PERMISSION_GRANTED) {
+            if (grantResults.length == PERMISSIONS_LIST.length && loopPermissions(grantResults)) {
                 // Granted
                 granted();
             } else {
@@ -72,13 +67,11 @@ public class HomeActivity extends AppCompatActivity {
             return true;
         }
 
-        if (checkSelfPermission(WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
-                && checkSelfPermission(CAMERA) == PackageManager.PERMISSION_GRANTED
-                && checkSelfPermission(RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
+        if (loopPermissions()) {
             return true;
         }
 
-        if (shouldShowRequestPermissionRationale(WRITE_EXTERNAL_STORAGE) && shouldShowRequestPermissionRationale(CAMERA)
+        if (shouldShowRequestPermissionRationale(CAMERA) && shouldShowRequestPermissionRationale(READ_PHONE_STATE)
                 && shouldShowRequestPermissionRationale(RECORD_AUDIO)) {
             Snackbar.make(findViewById(R.id.main_content), R.string.permission_rationale, Snackbar.LENGTH_INDEFINITE)
                     .setAction(android.R.string.ok, new View.OnClickListener() {
@@ -93,5 +86,27 @@ public class HomeActivity extends AppCompatActivity {
         }
 
         return false;
+    }
+
+    private boolean loopPermissions(int[] grantResults) {
+        for (int result : grantResults) {
+            if (result != PackageManager.PERMISSION_GRANTED) return false;
+        }
+
+        // fine
+        return true;
+    }
+
+    private boolean loopPermissions() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+            return true;
+        }
+
+        for (String permission : PERMISSIONS_LIST) {
+            if (checkSelfPermission(permission) != PackageManager.PERMISSION_GRANTED) return false;
+        }
+
+        // fine
+        return true;
     }
 }
