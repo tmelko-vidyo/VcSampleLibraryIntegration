@@ -45,9 +45,9 @@ import java.util.Random;
 
 public class JoinActivity extends AppCompatActivity implements LmiDeviceManagerView.Callback, SensorEventListener {
 
-    private static final String PORTAL = "https://sandbox.vidyocloudstaging.com"; // PORTAL_URL e.g. https://vidyoclound.portal.com
-    private static final String ROOM_KEY = "CsUV4kkpdy"; // ROOM_KEY e.g. "dDVbw3rE"
-    private static final String DISPLAY_NAME = "Taras Mobile"; // DISPLAY_NAME e.g. "Mobile User"
+    private static final String PORTAL = null; // PORTAL_URL e.g. https://vidyoclound.portal.com
+    private static final String ROOM_KEY = null; // ROOM_KEY e.g. "dDVbw3rE"
+    private static final String DISPLAY_NAME = null; // DISPLAY_NAME e.g. "Mobile User"
 
     private static final String TAG = "JoinActivity";
 
