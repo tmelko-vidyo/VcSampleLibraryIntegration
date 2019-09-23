@@ -35,16 +35,19 @@ import com.vidyo.R;
 import com.vidyo.VidyoClientLib.LmiAndroidJniConferenceCallbacks;
 import com.vidyo.app.utils.AppUtils;
 import com.vidyo.app.utils.CallStatusEvent;
+import com.vidyo.app.utils.ChatMessageEvent;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import java.util.Random;
+
 public class JoinActivity extends AppCompatActivity implements LmiDeviceManagerView.Callback, SensorEventListener {
 
-    private static final String PORTAL = null; // PORTAL_URL e.g. https://vidyoclound.portal.com
-    private static final String ROOM_KEY = null; // ROOM_KEY e.g. "dDVbw3rE"
-    private static final String DISPLAY_NAME = null; // DISPLAY_NAME e.g. "Mobile User"
+    private static final String PORTAL = "https://sandbox.vidyocloudstaging.com"; // PORTAL_URL e.g. https://vidyoclound.portal.com
+    private static final String ROOM_KEY = "CsUV4kkpdy"; // ROOM_KEY e.g. "dDVbw3rE"
+    private static final String DISPLAY_NAME = "Taras Mobile"; // DISPLAY_NAME e.g. "Mobile User"
 
     private static final String TAG = "JoinActivity";
 
@@ -181,7 +184,7 @@ public class JoinActivity extends AppCompatActivity implements LmiDeviceManagerV
             FrameLayout frame = findViewById(R.id.lmi_device_manager_container);
 
             controlForm = new LinearLayout(this);
-            controlForm.setOrientation(LinearLayout.VERTICAL);
+            controlForm.setOrientation(LinearLayout.HORIZONTAL);
 
             lmiDeviceManagerView = new LmiDeviceManagerView(this, this);
             lmiDeviceManagerView.setVisibility(View.GONE);
@@ -190,6 +193,7 @@ public class JoinActivity extends AppCompatActivity implements LmiDeviceManagerV
 
             frame.addView(controlForm);
             addEndCallView(controlForm);
+            addSendChatMessageView(controlForm);
 
             controlForm.setVisibility(View.GONE);
 
@@ -259,6 +263,13 @@ public class JoinActivity extends AppCompatActivity implements LmiDeviceManagerV
         }
     }
 
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onChatMessageEvent(ChatMessageEvent event) {
+        if (event != null && event.isGroup()) {
+            Toast.makeText(JoinActivity.this, "User: " + event.getName() + ". Msg: " + event.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+    }
+
     private void attemptJoin() {
         if (!AppUtils.isNetworkAvailable(this)) {
             Toast.makeText(JoinActivity.this, R.string.no_network, Toast.LENGTH_SHORT).show();
@@ -283,7 +294,7 @@ public class JoinActivity extends AppCompatActivity implements LmiDeviceManagerV
         cancelButton.setEnabled(true);
 
         Uri portal = Uri.parse(portalParam);
-        boolean isHttps = URLUtil.isHttpsUrl(String.valueOf(portalParam));
+        boolean isHttps = URLUtil.isHttpsUrl(portalParam);
         int port = portal.getPort();
 
         jniBridge.LmiAndroidJniHandleGuestLink(portalParam, port, keyParam, userParam, "", isHttps);
@@ -380,6 +391,23 @@ public class JoinActivity extends AppCompatActivity implements LmiDeviceManagerV
             @Override
             public void onClick(View v) {
                 if (jniBridge != null) jniBridge.LmiAndroidJniLeave();
+            }
+        });
+
+        frame.addView(endCall);
+
+        endCall.getLayoutParams().width = ViewGroup.LayoutParams.WRAP_CONTENT;
+        endCall.getLayoutParams().height = ViewGroup.LayoutParams.WRAP_CONTENT;
+    }
+
+    private void addSendChatMessageView(ViewGroup frame) {
+        Button endCall = new Button(this);
+        endCall.setText(R.string.send_message);
+        endCall.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                int dummy = new Random().nextInt(100);
+                if (jniBridge != null) jniBridge.LmiAndroidJniSendGroupChatMsg("Hello~" + dummy);
             }
         });
 

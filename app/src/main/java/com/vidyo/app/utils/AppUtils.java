@@ -1,10 +1,15 @@
 package com.vidyo.app.utils;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.Build;
+import android.provider.Settings;
 import android.telephony.TelephonyManager;
+import android.util.Log;
 import android.view.Surface;
 
 import com.vidyo.R;
@@ -61,9 +66,30 @@ public class AppUtils {
 
     @SuppressLint({"MissingPermission", "HardwareIds"})
     public static String deviceId(Context context) {
-        TelephonyManager telephonyManager;
-        telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
-        return telephonyManager != null ? telephonyManager.getDeviceId() : "zero";
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
+                && context.checkSelfPermission(Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
+            Log.e("ERROR", "No permissions granted for Telephony manager");
+            return "";
+        }
+
+        String machineID = null;
+
+        TelephonyManager tManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+        if (tManager != null) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                machineID = tManager.getImei();
+            } else {
+                machineID = tManager.getDeviceId();
+            }
+        }
+
+        if (machineID == null) {
+            machineID = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
+        }
+
+        if (machineID == null) return "";
+
+        return machineID;
     }
 
     public static boolean isNetworkAvailable(Context context) {
