@@ -36,6 +36,7 @@ import com.vidyo.VidyoClientLib.LmiAndroidJniConferenceCallbacks;
 import com.vidyo.app.utils.AppUtils;
 import com.vidyo.app.utils.CallStatusEvent;
 import com.vidyo.app.utils.ChatMessageEvent;
+import com.vidyo.app.utils.ParticipantsChangeEvent;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -268,6 +269,15 @@ public class JoinActivity extends AppCompatActivity implements LmiDeviceManagerV
         if (event != null && event.isGroup()) {
             Toast.makeText(JoinActivity.this, "User: " + event.getName() + ". Msg: " + event.getMessage(), Toast.LENGTH_SHORT).show();
         }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onParticipantsChangeEvent(ParticipantsChangeEvent event) {
+        /*
+         * Initially, you will receive zero and then 1 if you are the only person on the call.
+         * If someone join/left - you will receive an updates with actual count.
+         */
+        Toast.makeText(JoinActivity.this, "Participants count changed: " + event.getActualParticipantsCount(), Toast.LENGTH_SHORT).show();
     }
 
     private void attemptJoin() {

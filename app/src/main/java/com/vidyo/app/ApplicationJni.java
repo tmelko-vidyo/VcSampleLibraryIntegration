@@ -7,6 +7,7 @@ import com.vidyo.VidyoClientLib.LmiAndroidJniChatCallbacks;
 import com.vidyo.VidyoClientLib.LmiAndroidJniConferenceCallbacks;
 import com.vidyo.app.utils.CallStatusEvent;
 import com.vidyo.app.utils.ChatMessageEvent;
+import com.vidyo.app.utils.ParticipantsChangeEvent;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -19,6 +20,8 @@ public class ApplicationJni extends LmiAndroidAppJni {
     private static final String METHOD_FOR_JNI_CALLBACK = "applicationJniConferenceStatusCallback";
     private static final String METHOD_FOR_JNI_GROUP_CHAT_CALLBACK = "applicationJniChatCallback";
 
+    private static final String METHOD_FOR_JNI_PARTICIPANTS_CALLBACK = "applicationJniParticipantChangeCallback";
+
     private LmiAndroidJniConferenceCallbacks conferenceCallbacks;
     private LmiAndroidJniChatCallbacks chatCallbacks;
 
@@ -26,7 +29,8 @@ public class ApplicationJni extends LmiAndroidAppJni {
     public void onCreate() {
         super.onCreate();
         conferenceCallbacks = new LmiAndroidJniConferenceCallbacks(CALLBACK_CLASS_PATH, METHOD_FOR_JNI_CALLBACK,
-                null, null, null, null, null);
+                null, null, null, null,
+                METHOD_FOR_JNI_PARTICIPANTS_CALLBACK);
         chatCallbacks = new LmiAndroidJniChatCallbacks(CALLBACK_CLASS_PATH, METHOD_FOR_JNI_GROUP_CHAT_CALLBACK);
     }
 
@@ -49,10 +53,22 @@ public class ApplicationJni extends LmiAndroidAppJni {
      * @param message   message body
      */
     @SuppressWarnings("JniCallback")
-    private void applicationJniChatCallback(boolean groupChat, String uri, String name, String message) {
+    public void applicationJniChatCallback(boolean groupChat, String uri, String name, String message) {
         Log.d(TAG, "Got chat message from: " + name + ", Msg: " + message);
 
         EventBus.getDefault().post(new ChatMessageEvent(name, message, groupChat, uri));
+    }
+
+    /**
+     * Called from JNI layer when the participants in a conference has changed.
+     *
+     * @param numOfParticipants the number of participants currently in the conference
+     */
+    @SuppressWarnings("JniCallback")
+    public void applicationJniParticipantChangeCallback(int numOfParticipants) {
+        Log.d(TAG, "Got participants change event. Actual count: " + numOfParticipants);
+
+        EventBus.getDefault().post(new ParticipantsChangeEvent(numOfParticipants));
     }
 
     @Override
