@@ -1,16 +1,16 @@
 ## VidyoClient library integration
 
-Simple VidyoWorks sample demonstaiting VidyoClient **join as guest** & **tiles rendering** capabilities.
+VidyoWorks sample demonstaiting VidyoClient **join as guest** & **tiles rendering** capabilities.
 
-Library included.
-Version: 3.5.17
+### Integrate
+
+1. Download the latest VidyoClient Android package:
+https://support.vidyocloud.com/hc/en-us/articles/115003651834-VidyoWorks-API-Downloads-
+
+2. Place the corresponding \*.so binaries into: jniLibs -> "arm64-v8a" & "armeabi-v7a" folders (libVidyoClientApp.so).
+
+3. Build and run on the device.
 
 > PORTA, ROOM KEY, DISPLAY NAME could be hardcoded within **JoinActivity**.
 
-> No NDK pre-build required. Just Android Studio 3.x version and real device.
-
-## Updates
-
-> 23.09.19: 
-1. Support send/receive chat message events;
-2. Update to 3.5.17 VC library version.
+> No NDK pre-build required. Just the latest VidyoClient library, Android Studio 3.x version and the real device.
