@@ -6,13 +6,15 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.design.widget.Snackbar;
-import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+
+import com.google.android.material.snackbar.Snackbar;
 import com.vidyo.R;
+import com.vidyo.app.utils.AppUtils;
 
 import static android.Manifest.permission.CAMERA;
 import static android.Manifest.permission.READ_PHONE_STATE;
@@ -40,6 +42,10 @@ public class HomeActivity extends AppCompatActivity {
 
     public void guestJoin(View view) {
         startActivity(new Intent(this, JoinActivity.class));
+    }
+
+    public void sendLogs(View view) {
+        AppUtils.sendLogs(this);
     }
 
     /**

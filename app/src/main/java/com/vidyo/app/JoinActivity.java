@@ -9,7 +9,6 @@ import android.hardware.SensorManager;
 import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.Display;
@@ -27,6 +26,8 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.vidyo.BuildConfig;
 import com.vidyo.LmiDeviceManager.LmiDeviceManagerView;
@@ -173,11 +174,11 @@ public class JoinActivity extends AppCompatActivity implements LmiDeviceManagerV
         String internalDir = AppUtils.getAndroidInternalMemDir(this);
         String cacheDir = AppUtils.getAndroidCacheDir(this);
 
-        long result = jniBridge.LmiAndroidJniConstruct(caFileName, AppUtils.deviceId(this),
+        jniBridge.LmiAndroidJniSetLogging(LOGGING_FILTER);
+        long result = jniBridge.LmiAndroidJniConstruct(caFileName, AppUtils.getUniqueID(this),
                 internalDir, cacheDir, internalDir, BuildConfig.VERSION_NAME, this);
 
         if (initResult && result > 0) {
-            jniBridge.LmiAndroidJniSetLogging(LOGGING_FILTER);
             jniBridge.LmiAndroidJniRegisterDefaultActivity(this);
 
             jniBridge.registerCallback();

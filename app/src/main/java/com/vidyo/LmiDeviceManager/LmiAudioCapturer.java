@@ -97,38 +97,31 @@ public class LmiAudioCapturer {
 		/*
 		 * The audio input type depends on what is supported by the Android version.
 		 * If the Android SDK version is 11 and newer then use:
-		 *   - MediaRecorder.AudioSource.VOICE_COMMUNICATION : Microphone audio source tuned for voice 
-		 *     communications such as VoIP. It will for instance take advantage of echo cancellation or 
-		 *     automatic gain control if available. It otherwise behaves like DEFAULT if no voice 
-		 *     processing is applied. 
-		 *     
+		 *   - MediaRecorder.AudioSource.VOICE_COMMUNICATION : Microphone audio source tuned for voice
+		 *     communications such as VoIP. It will for instance take advantage of echo cancellation or
+		 *     automatic gain control if available. It otherwise behaves like DEFAULT if no voice
+		 *     processing is applied.
+		 *
 		 * If the Android SDK version is less than 11 then use:
-		 *   - MediaRecorder.AudioSource.MIC : Microphone audio source 
+		 *   - MediaRecorder.AudioSource.MIC : Microphone audio source
 		 */
 		String manufacturer = Build.MANUFACTURER.toLowerCase();//special handling for kindle fire HD
 		String device = Build.DEVICE.toLowerCase();
 		String model = Build.MODEL.toLowerCase();
-		if (manufacturer.equalsIgnoreCase("amazon")) 
+		if (manufacturer.equalsIgnoreCase("amazon"))
 		{
 			if (device.equalsIgnoreCase("d01e"))
 				return MediaRecorder.AudioSource.MIC;
 		}
 
-		// ====== disable the workaround for Lollipop for now, and revert to original code =====
 		/*
-		if (Build.VERSION.SDK_INT >= 21) {
-			// Started from Lollipop, many devices default MIC might have very weak volume.
-			// Use MediaRecorder.AudioSource.CAMCORDER: Microphone audio source with same orientation
-			// as camera if available, the main device microphone otherwise
-			return MediaRecorder.AudioSource.CAMCORDER;
-		} else */
-		if (Build.VERSION.SDK_INT >= 16) {
-			//TODO: add code to check the echo cancellation and audio gain support
-			return MediaRecorder.AudioSource.VOICE_COMMUNICATION;
-		} else if (Build.VERSION.SDK_INT >= 11) {
+		 * Starting from Android Pie (9.0 ~ 28) the VOICE_COMMUNICATION audio source type is picking the wrong microphone device (small mic).
+		 * To workaround this issue we have to use DEFAULT audio source type.
+		 */
+		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
 			return MediaRecorder.AudioSource.VOICE_COMMUNICATION;
 		} else {
-			return MediaRecorder.AudioSource.MIC;
+			return MediaRecorder.AudioSource.DEFAULT;
 		}
 	}
 
@@ -136,9 +129,9 @@ public class LmiAudioCapturer {
 	@TargetApi(Build.VERSION_CODES.JELLY_BEAN)
 	private static void setEchoCancel(AudioRecord record) {
 		if (Build.VERSION.SDK_INT >= 16) {
-			boolean aecIsAvailable = AcousticEchoCanceler.isAvailable(); 
-			Log.i(TAG, "AcousticEchoCanceler.isAvailable() = " + aecIsAvailable); 
-			if (aecIsAvailable) { 
+			boolean aecIsAvailable = AcousticEchoCanceler.isAvailable();
+			Log.i(TAG, "AcousticEchoCanceler.isAvailable() = " + aecIsAvailable);
+			if (aecIsAvailable) {
 				AcousticEchoCanceler aec = AcousticEchoCanceler.create(record.getAudioSessionId());
 				//If Echo Cancel is to be enabled then do so
 				if (LmiAudioCapturerDeviceInfo.getEnableEchoCancel()) {
@@ -150,22 +143,22 @@ public class LmiAudioCapturer {
 						aec.setEnabled(false);
 					}
 				}
-				
-				Log.i(TAG, "AEC_enabled=" + aec.getEnabled() + ", hasControl=" + aec.hasControl()); 
+
+				Log.i(TAG, "AEC_enabled=" + aec.getEnabled() + ", hasControl=" + aec.hasControl());
 			}
-			
+
 			boolean agcIsAvailable = AutomaticGainControl.isAvailable();
-			Log.i(TAG, "AutomaticGainControl.isAvailable() = " + agcIsAvailable); 
-			if (agcIsAvailable) { 
+			Log.i(TAG, "AutomaticGainControl.isAvailable() = " + agcIsAvailable);
+			if (agcIsAvailable) {
 				AutomaticGainControl agc = AutomaticGainControl.create(record.getAudioSessionId());
 				if(!agc.getEnabled()) {
 					agc.setEnabled(true);
 				}
-				Log.i(TAG, "AGC_enabled=" + agc.getEnabled() + ", hasControl=" + agc.hasControl()); 
+				Log.i(TAG, "AGC_enabled=" + agc.getEnabled() + ", hasControl=" + agc.hasControl());
 			}
-			
+
 			boolean nsIsAvailable = NoiseSuppressor.isAvailable();
-			Log.i(TAG, "NoiseSuppressor.isAvailable() = " + nsIsAvailable); 
+			Log.i(TAG, "NoiseSuppressor.isAvailable() = " + nsIsAvailable);
 			if (nsIsAvailable) {
 				NoiseSuppressor ns = NoiseSuppressor.create(record.getAudioSessionId());
 				if (LmiAudioCapturerDeviceInfo.getEnableNoiseSuppression()) {
@@ -175,9 +168,9 @@ public class LmiAudioCapturer {
 					if (ns.getEnabled())
 						ns.setEnabled(false);
 				}
-				Log.i(TAG, "NoiseSuppressor_enabled=" + ns.getEnabled() + ", hasControl=" + ns.hasControl()); 
+				Log.i(TAG, "NoiseSuppressor_enabled=" + ns.getEnabled() + ", hasControl=" + ns.hasControl());
 			}
-			
+
 		}
 	}
 	//TODO: End code that needs to be done the right way
@@ -185,11 +178,11 @@ public class LmiAudioCapturer {
 	@TargetApi(Build.VERSION_CODES.JELLY_BEAN)
 	private static void logEchoCancelState(AudioRecord record) {
 		if (Build.VERSION.SDK_INT >= 16) {
-			boolean isAvailable = AcousticEchoCanceler.isAvailable(); 
-			Log.i(TAG, "AcousticEchoCanceler.isAvailable() = " + isAvailable); 
+			boolean isAvailable = AcousticEchoCanceler.isAvailable();
+			Log.i(TAG, "AcousticEchoCanceler.isAvailable() = " + isAvailable);
 		}
 	}
-	
+
 	private static boolean micIsRunning = false;
 	public static boolean micIsRunning() {
 		return micIsRunning;
@@ -229,20 +222,20 @@ public class LmiAudioCapturer {
 					minframeSize = 10 * frameSize;
 
 				int sourceType = getAudioSourceType();
-				
+
 				Log.i(TAG, "Starting audio capture. Rate: "
 						+ String.format("%d", audioCapturer.samplingRate)
 						+ " BytesPerFrame: " + String.format("%d", frameSize));
 				record = new AudioRecord(sourceType, audioCapturer.samplingRate,
 						AudioFormat.CHANNEL_IN_MONO,
 						AudioFormat.ENCODING_PCM_16BIT, minframeSize);
-				
+
 				logEchoCancelState(record);
-				
+
 				//TODO: This function needs to be done the right way
 				setEchoCancel(record);
 				//TODO: End code that needs to be done the right way
-				
+
 			} catch (Throwable t) {
 				Log.e(TAG, "Failed create audio capturer");
 				audioCapturer.completeStartUp.release();
@@ -302,7 +295,7 @@ public class LmiAudioCapturer {
 			record.release();
 			Log.i(TAG, "Microphone Stopped");
 			micIsRunning = false;
-			
+
 			// Release frames so we do not leak memory
 			audioCapturer.frames = null;
 			audioCapturer.readyFrames = null;
