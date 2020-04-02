@@ -376,7 +376,7 @@ public class LmiAudioPlaybackDevice {
 	}
 	
 	// Default audio playback stream type
-	private static int playbackStream = AudioManager.STREAM_VOICE_CALL;
+	private static int playbackStream = AudioManager.STREAM_MUSIC;
 	
 	public static void setValidAudioPlaybackStream(int pbStream) {
 		playbackStream = pbStream;

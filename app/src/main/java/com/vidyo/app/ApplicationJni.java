@@ -5,6 +5,7 @@ import android.util.Log;
 import com.vidyo.VidyoClientLib.LmiAndroidAppJni;
 import com.vidyo.VidyoClientLib.LmiAndroidJniChatCallbacks;
 import com.vidyo.VidyoClientLib.LmiAndroidJniConferenceCallbacks;
+import com.vidyo.app.audio.BluetoothManager;
 import com.vidyo.app.utils.CallStatusEvent;
 import com.vidyo.app.utils.ChatMessageEvent;
 import com.vidyo.app.utils.ParticipantsChangeEvent;
@@ -28,6 +29,8 @@ public class ApplicationJni extends LmiAndroidAppJni {
     @Override
     public void onCreate() {
         super.onCreate();
+        BluetoothManager.initBluetoothManager(getApplicationContext());
+
         conferenceCallbacks = new LmiAndroidJniConferenceCallbacks(CALLBACK_CLASS_PATH, METHOD_FOR_JNI_CALLBACK,
                 null, null, null, null,
                 METHOD_FOR_JNI_PARTICIPANTS_CALLBACK);

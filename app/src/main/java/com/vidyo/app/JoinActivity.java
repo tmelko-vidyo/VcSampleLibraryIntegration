@@ -6,7 +6,6 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -120,11 +119,6 @@ public class JoinActivity extends AppCompatActivity implements LmiDeviceManagerV
         portal.setText(PORTAL);
         key.setText(ROOM_KEY);
         user.setText(DISPLAY_NAME);
-
-        AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-        if (audioManager != null) {
-            audioManager.setSpeakerphoneOn(true);
-        }
 
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 
